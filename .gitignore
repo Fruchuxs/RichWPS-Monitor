@@ -3,3 +3,7 @@
 /logs/
 /*~
 /Database/
+/monitor/target
+/client/target
+/monitor/target/*
+/client/target/*
