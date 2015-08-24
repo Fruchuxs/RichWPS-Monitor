@@ -17,7 +17,6 @@ package de.hsos.ecs.richwps.wpsmonitor.client.resource.converter;
 
 import de.hsos.ecs.richwps.wpsmonitor.client.resource.WpsResource;
 import de.hsos.ecs.richwps.wpsmonitor.data.entity.WpsEntity;
-import java.net.MalformedURLException;
 
 /**
  *
@@ -26,6 +25,6 @@ import java.net.MalformedURLException;
 public class ResourceConverter {
 
     public static WpsResource WpsEntityToResource(final WpsEntity entity) {
-        return new WpsResource(entity.getUri(), entity.getIdentifier());
+        return new WpsResource(entity.getEndpoint(), entity.getId());
     }
 }

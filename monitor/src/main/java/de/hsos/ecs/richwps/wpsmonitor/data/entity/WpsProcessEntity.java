@@ -1,7 +1,17 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Copyright 2014 Florian Vogelpohl <floriantobias@gmail.com>.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package de.hsos.ecs.richwps.wpsmonitor.data.entity;
 
@@ -29,7 +39,12 @@ import javax.persistence.UniqueConstraint;
     /**
      * Gets all WpsProcess-entities by wps identifier.
      */
-    @NamedQuery(name = "wpsprocess.getAllOf", query = "SELECT t FROM WpsProcessEntity t WHERE t.wps.identifier = :identifier"),
+    @NamedQuery(name = "wpsprocess.getAllOf", query = "SELECT t FROM WpsProcessEntity t WHERE t.wps.id = :wpsId"),
+
+    /**
+     * Gets all WpsProcess-entities by wps endpoint.
+     */
+    @NamedQuery(name = "wpsprocess.getAllOfEndpoint", query = "SELECT t FROM WpsProcessEntity t WHERE t.wps.endpoint = :endpoint"),
 
     /**
      * Gets all WpsProcess-entities.
@@ -39,12 +54,22 @@ import javax.persistence.UniqueConstraint;
     /**
      * Gets a specific process entity by wps.identifier and process.identifier.
      */
-    @NamedQuery(name = "wpsprocess.get", query = "SELECT t FROM WpsProcessEntity t WHERE t.wps.identifier = :wpsidentifier AND t.identifier = :identifier"),
+    @NamedQuery(name = "wpsprocess.get", query = "SELECT t FROM WpsProcessEntity t WHERE t.wps.id = :wpsId AND t.identifier = :processIdentifier"),
+
+    /**
+     * Gets a specific process entity by wps.endpoint and process.identifier.
+     */
+    @NamedQuery(name = "wpsprocess.getByEndpoint", query = "SELECT t FROM WpsProcessEntity t WHERE t.wps.endpoint = :endpoint AND t.identifier = :processIdentifier"),
 
     /**
      * Deletes all process entities that match the given wps identifier.
      */
-    @NamedQuery(name = "wpsprocess.deleteByWps", query = "DELETE FROM WpsProcessEntity t WHERE t.wps.identifier = :wpsIdentifier")
+    @NamedQuery(name = "wpsprocess.deleteByWps", query = "DELETE FROM WpsProcessEntity t WHERE t.wps.id = :wpsId"),
+
+    /**
+     * Deletes all process entities that match the given wps endpoint.
+     */
+    @NamedQuery(name = "wpsprocess.deleteByWpsEndpoint", query = "DELETE FROM WpsProcessEntity t WHERE t.wps.endpoint = :endpoint")
 })
 
 @Table(

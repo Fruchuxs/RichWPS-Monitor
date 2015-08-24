@@ -15,6 +15,10 @@
  */
 package de.hsos.ecs.richwps.wpsmonitor.client;
 
+import de.hsos.ecs.richwps.wpsmonitor.client.exception.WpsMonitorClientException;
+import de.hsos.ecs.richwps.wpsmonitor.client.exception.WpsMonitorClientWpsNotFoundException;
+import de.hsos.ecs.richwps.wpsmonitor.client.exception.WpsMonitorClientWpsProcessNotFoundException;
+import de.hsos.ecs.richwps.wpsmonitor.client.exception.WpsMonitorOfflineClientException;
 import de.hsos.ecs.richwps.wpsmonitor.client.http.HttpException;
 import de.hsos.ecs.richwps.wpsmonitor.client.http.WpsMonitorRequester;
 import de.hsos.ecs.richwps.wpsmonitor.client.resource.WpsProcessResource;
@@ -62,18 +66,35 @@ public class WpsMonitorClientImpl implements WpsMonitorClient {
         wpsContext = new HashMap<>();
     }
 
-    private void initContext() throws HttpException {
+    private void initContext() throws HttpException, WpsMonitorOfflineClientException {
         initContext(false);
     }
 
-    private void initContext(final Boolean refresh) throws HttpException {
+    private void initContext(final Boolean refresh) throws HttpException, WpsMonitorOfflineClientException {
+        if (!isMonitorReachable(monitorEndpoint)) {
+            throw new WpsMonitorOfflineClientException(monitorEndpoint);
+        }
+
         if (wpsContext.isEmpty() || refresh) {
             List<WpsEntity> wpsList = requester.getWpsList();
 
+            if (wpsList == null) {
+                throw new WpsMonitorOfflineClientException(monitorEndpoint);
+            }
+
             for (final WpsEntity entity : wpsList) {
-                wpsContext.put(entity.getUri(), ResourceConverter.WpsEntityToResource(entity));
+                wpsContext.put(entity.getEndpoint(), ResourceConverter.WpsEntityToResource(entity));
             }
         }
+    }
+
+    @Override
+    public Boolean isReachable() {
+        return isMonitorReachable(monitorEndpoint);
+    }
+
+    private Boolean isMonitorReachable(final URL endpoint) {
+        return requester.isRequestable(endpoint);
     }
 
     @Override
@@ -100,7 +121,17 @@ public class WpsMonitorClientImpl implements WpsMonitorClient {
     public WpsProcessResource getWpsProcess(final WpsResource wpsResource, final String wpsProcessIdentifier, final Integer consider)
             throws WpsMonitorClientException {
         try {
-            return requester.getProcess(wpsResource, wpsProcessIdentifier, consider);
+            if (!isMonitorReachable(monitorEndpoint)) {
+                throw new WpsMonitorOfflineClientException(monitorEndpoint);
+            }
+
+            WpsProcessResource process = requester.getProcess(wpsResource, wpsProcessIdentifier, consider);
+
+            if (process == null) {
+                throw new WpsMonitorClientWpsProcessNotFoundException(wpsProcessIdentifier, wpsResource.getWpsEndPoint());
+            }
+
+            return process;
         } catch (HttpException ex) {
             throw new WpsMonitorClientException("Can't Request Process metrics.", ex);
         }
@@ -121,9 +152,13 @@ public class WpsMonitorClientImpl implements WpsMonitorClient {
             initContext(forceRefresh);
             WpsResource result = wpsContext.get(wpsEndPoint);
 
+            if (result == null) {
+                throw new WpsMonitorClientWpsNotFoundException(wpsEndPoint);
+            }
+
             return result;
         } catch (HttpException ex) {
-            throw new WpsMonitorClientException("Can't initalize WpsContent.", ex);
+            throw new WpsMonitorClientException("Can't initalize WpsContext.", ex);
         }
     }
 
@@ -140,7 +175,7 @@ public class WpsMonitorClientImpl implements WpsMonitorClient {
             initContext(forceRefresh);
             return new ArrayList<>(wpsContext.values());
         } catch (HttpException ex) {
-            throw new WpsMonitorClientException("Can't request List of WPS.", ex);
+            throw new WpsMonitorClientException("Can't request List of WPS. Maybe the Monitor is offline (used endpoint: " + monitorEndpoint.toString() + ")", ex);
         }
     }
 

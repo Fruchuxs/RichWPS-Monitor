@@ -16,6 +16,7 @@
 package de.hsos.ecs.richwps.wpsmonitor.data.dataaccess;
 
 import de.hsos.ecs.richwps.wpsmonitor.data.entity.WpsEntity;
+import java.net.URL;
 import java.util.List;
 
 /**
@@ -23,27 +24,22 @@ import java.util.List;
  *
  * @author Florian Vogelpohl <floriantobias@gmail.com>
  */
-public interface WpsDataAccess extends DataAccess<WpsEntity> {
+public interface WpsDataAccess extends GenericDataAccess<WpsEntity> {
 
     /**
-     * Gets all WpsEntity-objects.
+     * Gets all WpsEntity-objects. This method should be uses carefully. If you
+     * want to select a specific range of objects, use get(range : Range)
+     * instead.
      *
      * @return List of WpsEntity objects
      */
     public List<WpsEntity> getAll();
 
     /**
-     * Finds a WpsEntity instance by its identifier String.
+     * Gets a WpsEntity-Object which matches the given endpoint.
      *
-     * @param wpsIdentifier WpsIdentifier String
-     * @return WpsEntity instance
+     * @param endpoint Endpoint of the specific WPS
+     * @return WpsEntity Instance
      */
-    public WpsEntity find(String wpsIdentifier);
-
-    /**
-     * Removes a stored {@link WpsEntity}.
-     *
-     * @param wpsIdentifier Wps entity identifier
-     */
-    public void remove(final String wpsIdentifier);
+    public WpsEntity find(final URL endpoint);
 }
